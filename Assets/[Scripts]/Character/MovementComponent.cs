@@ -13,10 +13,14 @@ public class MovementComponent : MonoBehaviour
     [SerializeField]
     float JumpForce = 5;
 
+    [Header("Player Pickups")]
+    public int Astronaut_Coin = 0;
+
     //Components
     PlayerController playerController;
     Rigidbody RigidBody;
     Animator Playeranimator;
+    public GameObject astronaut_Coin;
 
     //Movement Refrences
     Vector2 InputVector = Vector2.zero;
@@ -33,6 +37,7 @@ public class MovementComponent : MonoBehaviour
         Playeranimator = GetComponent<Animator>();
         playerController = GetComponent<PlayerController>();
         RigidBody = GetComponent<Rigidbody>();
+        
     }
 
     // Start is called before the first frame update
@@ -99,5 +104,15 @@ public class MovementComponent : MonoBehaviour
         playerController.isJumping = false;
 
         Playeranimator.SetBool(IsJumpingHash, false);
+    }
+
+    private void OnTriggerEnter(Collider other)
+    {
+        if (other.gameObject.CompareTag("Astronaut_Coin"))
+        {
+            Debug.Log("Player collided with Astronaut_Coin");
+            Astronaut_Coin++;
+            Destroy(other.gameObject);
+        }
     }
 }
