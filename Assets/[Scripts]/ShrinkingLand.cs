@@ -9,12 +9,17 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class ShrinkingLand : MonoBehaviour
 {
     public float ElapsedShrinkingTime;
     [Range(0.1f, 1000.0f)]
-    public float TimeToShrink; 
+    public float TimeToShrink;
+
+    [Header("Platform State")]
+    [SerializeField] private bool isPlayerOn;
+    [SerializeField] private bool isExpanding;
 
     // scaling properties
     private Vector3 tempScale;          
@@ -27,20 +32,46 @@ public class ShrinkingLand : MonoBehaviour
     void Start()
     {
         boxCollider = GetComponent<BoxCollider>();
-        originalScale = boxCollider.size;  
+        originalScale = boxCollider.size;
+        isPlayerOn = false;
+        isExpanding = false;
         ElapsedShrinkingTime = TimeToShrink;
     }
 
     // Update is called once per frame
     void Update()
     {
-            Shrink();
-        // when we return to the original scale, we're done expanding, change the if statement
-        if (scale <= 0.0f)
+        if (!isPlayerOn)
         {
-            scale = 0.0f;
-            Time.timeScale = 0;
-            //End the game..!!
+            if (isExpanding)
+            {
+                Expand();
+            }
+        }
+        else
+        {
+            Shrink();
+        }
+
+    }
+
+    void Expand()
+    {
+        ElapsedShrinkingTime += Time.deltaTime;
+        scale = ElapsedShrinkingTime / TimeToShrink;
+
+        tempScale = transform.localScale;
+        tempScale.x = scale;
+        tempScale.y = scale;
+        tempScale.z = scale;
+        transform.localScale = tempScale;
+
+
+        // when we return to the original scale, we're done expanding, change the if statement
+        if (scale >= 1.0f)
+        {
+            scale = 1.0f;
+            isExpanding = false;
         }
     }
 
@@ -54,5 +85,29 @@ public class ShrinkingLand : MonoBehaviour
         tempScale.y = scale;
         tempScale.z = scale;
         transform.localScale = tempScale;
+
+        // when we return to the original scale, we're done expanding, change the if statement
+        if (scale <= 0.0f)
+        {
+            scale = 0.0f;
+            Time.timeScale = 0;
+            UnityEngine.SceneManagement.SceneManager.LoadScene("GameOver");
+        }
+    }
+
+    private void OnTriggerEnter(Collider other)
+    {
+        if (other.gameObject.CompareTag("Player"))
+        {
+            isPlayerOn = true;
+            isExpanding = false;
+        }
+    }
+
+
+    private void OnTriggerExit(Collider other)
+    {
+        isPlayerOn = false;
+        isExpanding = true;
     }
 }

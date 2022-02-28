@@ -2,19 +2,22 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using TMPro;
+using UnityEngine.SceneManagement;
 
 public class MovementComponent : MonoBehaviour
 {
     //Movement Variables
     [SerializeField]
-    float WalkSpeed = 5;
+    float WalkSpeed = 0.000005f;
     [SerializeField]
-    float RunSpeed = 10;
+    float RunSpeed = 0.05f;
     [SerializeField]
-    float JumpForce = 5;
+    float JumpForce = 2.5f;
 
     [Header("Player Pickups")]
     public int Astronaut_Coin = 0;
+    public TMP_Text Astronaut_CoinText;
 
     //Components
     PlayerController playerController;
@@ -26,11 +29,14 @@ public class MovementComponent : MonoBehaviour
     Vector2 InputVector = Vector2.zero;
     Vector3 MoveDirection = Vector3.zero;
 
+    public AudioClip Astronaut_Coin_Clip;
+
     public readonly int MovementXHash = Animator.StringToHash("MovementX");
     public readonly int MovementYHash = Animator.StringToHash("MovementY");
     public readonly int IsWalkingHash = Animator.StringToHash("IsWalking");
     public readonly int IsJumpingHash = Animator.StringToHash("IsJumping");
     public readonly int IsRunningHash = Animator.StringToHash("IsRunning");
+    public readonly int IsFallingHash = Animator.StringToHash("IsFalling");
 
     private void Awake()
     {
@@ -43,14 +49,19 @@ public class MovementComponent : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        
+        playerController.isFalling = false;
     }
 
     // Update is called once per frame
     void Update()
     {
+        if (Astronaut_Coin >= 3)
+        {
+            UnityEngine.SceneManagement.SceneManager.LoadScene("Win");
+        }
+
         if (playerController.isJumping) return;
-        if (!(InputVector.magnitude > 0))
+        if (!(InputVector.magnitude > -0.1f))
         {
             MoveDirection = Vector3.zero;
             playerController.isWalking = false;
@@ -68,6 +79,18 @@ public class MovementComponent : MonoBehaviour
         Vector3 MovementDirection = MoveDirection * (CurrentSpeed * Time.deltaTime);
 
         transform.position += MovementDirection;
+
+        CheckFalling();
+
+    }
+
+    public void CheckFalling()
+    {
+        if (this.transform.position.y < -1)
+        {
+            playerController.isFalling = true;
+            Playeranimator.SetBool(IsFallingHash, playerController.isFalling);
+        }
     }
 
     public void OnMovement(InputValue value)
@@ -77,9 +100,7 @@ public class MovementComponent : MonoBehaviour
         InputVector = value.Get<Vector2>();
         Playeranimator.SetFloat(MovementXHash, InputVector.x);
         Playeranimator.SetFloat(MovementYHash, InputVector.y);
-        print("InputVector:" + InputVector);
-
-      
+        //print("InputVector:" + InputVector);
     }
 
     public void OnRun(InputValue value)
@@ -90,6 +111,7 @@ public class MovementComponent : MonoBehaviour
 
     public void OnJump(InputValue value)
     {
+        CheckFalling();
         if (playerController.isJumping) return;
 
         playerController.isJumping = value.isPressed;
@@ -112,7 +134,11 @@ public class MovementComponent : MonoBehaviour
         {
             Debug.Log("Player collided with Astronaut_Coin");
             Astronaut_Coin++;
+            Astronaut_CoinText.text = "Coins: " + Astronaut_Coin;
+            AudioSource.PlayClipAtPoint(Astronaut_Coin_Clip, transform.position);
             Destroy(other.gameObject);
         }
+
+      
     }
 }

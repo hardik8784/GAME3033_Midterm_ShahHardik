@@ -8,6 +8,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class DeathPlane : MonoBehaviour
 {
@@ -16,6 +17,8 @@ public class DeathPlane : MonoBehaviour
         if (other.gameObject.CompareTag("Player"))
         {
             Debug.Log("Player collided with Death Plane");
+            // Only specifying the sceneName or sceneBuildIndex will load the Scene with the Single mode
+            UnityEngine.SceneManagement.SceneManager.LoadScene("GameOver");
         }
     }
 }

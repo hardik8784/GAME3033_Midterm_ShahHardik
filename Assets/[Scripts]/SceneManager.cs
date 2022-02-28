@@ -15,4 +15,15 @@ public class SceneManager : MonoBehaviour
         // Only specifying the sceneName or sceneBuildIndex will load the Scene with the Single mode
         UnityEngine.SceneManagement.SceneManager.LoadScene("Start");
     }
+
+    public void ActivatePause()
+    {
+        Time.timeScale = 0;
+
+    }
+
+    public void DeActivatePause()
+    {
+        Time.timeScale = 1;
+    }
 }
